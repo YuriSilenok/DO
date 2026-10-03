@@ -13,7 +13,7 @@
 | № | Что показать на скриншоте | Имя файла |
 |---|---|---|
 | Рис. 1 | Скачивание Python с официального сайта | `shag-01-python-site.png` |
-| Рис. 2 | Установка Python: галочка «Add Python to PATH» | `shag-02-install-python.png` |
+| Рис. 2 | Установка Python Install Manager | `shag-02-install-python.png` |
 | Рис. 3 | Вывод команды `python --version` в терминале | `shag-03-version.png` |
 | Рис. 4 | VS Code с установленным расширением Python | `shag-04-vscode.png` |
 | Рис. 5 | Папка проекта и первая программа `first.py` с выводом | `shag-05-first.png` |

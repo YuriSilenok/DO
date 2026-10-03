@@ -18,7 +18,7 @@
 | Рис. 4 | Терминал Termux: вывод команд `whoami`, `pwd`, `ls` | `shag-04-komandy.png` |
 | Рис. 5 | Клавиатура Termux с дополнительным рядом клавиш | `shag-05-klaviatura.png` |
 | Рис. 6 | Редактор nano с файлом `bot.py` в Termux | `shag-06-nano.png` |
-| Рис. 7 | Установка `vk_api` в Termux (`pip install vk_api`) | `shag-07-vkapi.png` |
+| Рис. 7 | Установка `vk_api` в виртуальную среду Termux (`python -m pip install --upgrade vk_api`) | `shag-07-vkapi.png` |
 | Рис. 8 | Запуск бота в Termux: «Бот запущен!» | `shag-08-zapusk.png` |
 
 > ВАЖНО: на скриншотах № 2–8 не должно быть видно токен и личные данные (номер телефона, пароль). Скриншот № 6 (nano) делайте без фрагмента кода с токеном или замажьте его.
