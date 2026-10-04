@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
@@ -63,12 +64,41 @@ def create_app(settings: Settings = None) -> FastAPI:
     fsettings = settings or load_settings()
     state = ChatAppState(fsettings)
 
+    # ------------------------------------------------------------------ #
+    # Фоновая очистка неактивных пользователей
+    # ------------------------------------------------------------------ #
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        await state.store.connect()
+
+        async def purge_loop() -> None:
+            """Периодически удаляет пользователей, не заходивших > N дней."""
+            while True:
+                await asyncio.sleep(state.settings.purge_interval_seconds)
+                try:
+                    await state.store.purge_inactive_users()
+                except Exception:
+                    pass
+
+        state.purge_task = asyncio.create_task(purge_loop())
+        try:
+            yield
+        finally:
+            if state.purge_task is not None:
+                state.purge_task.cancel()
+                try:
+                    await state.purge_task
+                except asyncio.CancelledError:
+                    pass
+            await state.store.close()
+
     app = FastAPI(
         title="Анонимная система чатов",
         description=(
             "Анонимные чаты с long polling, текстом, картинками и видео."
         ),
         version="0.1.0",
+        lifespan=lifespan,
     )
     app.state.chat = state
 
@@ -209,44 +239,6 @@ def create_app(settings: Settings = None) -> FastAPI:
     @app.get("/health")
     async def health() -> dict:
         return {"status": "ok"}
-
-    # ------------------------------------------------------------------ #
-    # Фоновая очистка неактивных пользователей
-    # ------------------------------------------------------------------ #
-    @asynccontextmanager
-    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        await state.store.connect()
-
-        async def purge_loop() -> None:
-            """Периодически удаляет пользователей, не заходивших > N дней."""
-            while True:
-                await asyncio.sleep(state.settings.purge_interval_seconds)
-                try:
-                    await state.store.purge_inactive_users()
-                except Exception:
-                    pass
-
-        state.purge_task = asyncio.create_task(purge_loop())
-        try:
-            yield
-        finally:
-            if state.purge_task is not None:
-                state.purge_task.cancel()
-                try:
-                    await state.purge_task
-                except asyncio.CancelledError:
-                    pass
-            await state.store.close()
-
-    app = FastAPI(
-        title="Анонимная система чатов",
-        description=(
-            "Анонимные чаты с long polling, текстом, картинками и видео."
-        ),
-        version="0.1.0",
-        lifespan=lifespan,
-    )
-    app.state.chat = state
 
     return app
 
